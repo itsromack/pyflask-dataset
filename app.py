@@ -1,5 +1,6 @@
 import os, dataset, MySQLdb
 from flask import Flask, request, session, redirect, url_for, escape
+from hashlib import sha256
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -29,11 +30,12 @@ def login():
     '''
 
 def user_exists(username, password):
-    row = users.find_one(username=username, pass_word=password)
-    session['user_id'] = row['id']
-    session['username'] = row['username']
+    hashed_password = sha256(password.encode())
+    row = users.find_one(username=username, pass_word=hashed_password.hexdigest())
     if row == None:
         return False
+    session['user_id'] = row['id']
+    session['username'] = row['username']
     return True
 
 
